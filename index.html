@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>رفيقي الصحي</title>
+<style>
+:root{--c1:#fff;--c2:#eee;--c3:#fff;--tx:#33303a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;background:var(--c3);color:var(--tx);line-height:1.8;transition:background .4s}
+#app{max-width:720px;margin:auto;padding:12px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:1.2rem}
+nav{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px}
+button{font:inherit;border:0;border-radius:12px;padding:8px 14px;background:var(--c1);color:var(--tx);cursor:pointer}
+button.s,nav button{background:var(--c2)}
+nav button{white-space:nowrap}nav button.on{background:var(--c1);outline:2px solid var(--tx)}
+.card{background:#fff;border:2px solid var(--c1);border-radius:16px;padding:14px;margin-bottom:12px}
+.card h3{margin:0 0 6px}
+input,select,textarea{font:inherit;width:100%;padding:8px;border:1px solid #bbb;border-radius:10px;margin:4px 0 8px;background:#fff;color:var(--tx)}
+input[type=radio],input[type=checkbox]{width:auto;margin:0 0 0 6px}
+input[type=color]{width:60px;height:40px;padding:2px}
+.chip{display:inline-block;background:var(--c3);border:1px solid var(--c1);border-radius:20px;padding:4px 12px;margin:3px}
+.bar{height:12px;background:var(--c3);border-radius:8px;overflow:hidden;border:1px solid var(--c1)}
+.bar i{display:block;height:100%;background:var(--c1);transition:width .4s}
+.ok{background:var(--c3);border-right:5px solid var(--c1);padding:8px 12px;border-radius:10px;margin:8px 0}
+.wel{background:#fff;padding:20px 8px}.wel h1{margin:0}
+.sub{color:#777}.ft{font-size:.8rem;color:#777;text-align:center}
+.r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#toast{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:10px;right:10px;background:#333;color:#fff;padding:12px;border-radius:12px;display:none;z-index:9}
+</style></head><body>
+<div id="toast"></div><div id="app"></div>
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let S=null;try{S=JSON.parse(localStorage.getItem('rh')||'null')}catch(e){}
+S=S||{p:null,meds:[],th:null,days:{}};
+const save=()=>{try{localStorage.setItem('rh',JSON.stringify(S))}catch(e){}};
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const day=()=>S.days[today()]||(S.days[today()]={water:0,acts:[],meals:[],taken:{},sleep:'',wake:'',notes:''});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const y=(f,m)=>S.p&&S.p.g=='f'?f:m;
+const PAL={f:['#C4B7CB','#B8B8BE','#FFF0F5'],m:['#9EBED9','#F5E6D3','#DDF5E5'],c:['#D9DCC3','#D2BFA5','#FFFAF0']};
+function theme(){const c=!S.p?['#ffffff','#f0f0f0','#ffffff']:S.th||(S.p.chronic?PAL.c:S.p.g=='f'?PAL.f:PAL.m),r=document.documentElement.style;r.setProperty('--c1',c[0]);r.setProperty('--c2',c[1]);r.setProperty('--c3',c[2])}
+const BAR={time:'مفيش وقت؟ قسّم التمرين 3 مرات × 10 دقايق.',money:'الميزانية ضيقة؟ الفول والعدس والبيض والزبادي من أرخص وأغنى مصادر البروتين.',boring:'الروتين ممل؟ غيّر نوع الأكل والرياضة كل كام يوم وكافئ نفسك بحاجة صغيرة مش أكل.',forget:'بتنسى؟ اربط العادة بحاجة ثابتة (كوباية مياه بعد كل قهوة أو صلاة) وفعّل التنبيهات.',mot:'الحماس بيقل؟ ابدأ بهدف صغير جدًا وسجّل إنجازك كل يوم.'};
+const TIPS=[['قعدة الشغل الصح','ضهرك مسنود، قدماك على الأرض، ركبتاك بزاوية 90°، وحافة الشاشة في مستوى عينيك.','الجلوس الغلط بيسبب ألم الرقبة والظهر وصداع.'],['قاعدة 20-20-20','كل 20 دقيقة بص على حاجة بعيدة (6 متر) لمدة 20 ثانية.','النظر الطويل للشاشات بيسبب جفاف العين والصداع.'],['قوم وتحرك','كل 45 دقيقة قوم وامشي دقيقتين واعمل تمدد للرقبة والكتف.','الجلوس الطويل بيبطّئ الأيض ويضر الدورة الدموية.'],['المياه','ابدأ يومك بكوباية مياه ووزّع باقي الكمية على اليوم.','قلة المياه بتسبب الصداع والإرهاق وتركيز أقل.'],['النوم','نام وصحّى في مواعيد ثابتة وسيب الموبايل قبل النوم بنص ساعة.','السهر بيزوّد الجوع والتوتر ويضعف المناعة.'],['الشمس والحركة','10–15 دقيقة تحت الشمس الصبح بتحسّن المزاج والنوم وفيتامين د.','قلة الحركة والشمس بتأثر على العظام والمزاج.'],['الأكل بهدوء','كُل ببطء وبدون شاشة، والطبق نصه خضار.','الأكل السريع قدام الشاشة بيخلّي الشبع ييجي متأخر.']];
+const JUNK=/بيتزا|برجر|همبورجر|شيبسي|شيبس|حلويات|كيك|كنافة|بسبوسة|شاورما|مقلي|كولا|بيبسي|شوكولاتة|شيكولاتة|جاتوه|ايس كريم|آيس كريم|مشروب غازي|عصير معلب|دونات|كرواسون|فرايد/;
+const R=[['عجة بيض بالخضار','بيض,طماطم,خضار,بصل,فلفل'],['فول بزيت الزيتون والطماطم','فول,طماطم,خبز,زيت'],['شوربة عدس بالخضار','عدس,جزر,بصل,خضار'],['فراخ مشوية مع سلطة','فراخ,خيار,طماطم,خس,خضار'],['سلطة تونة','تونة,خيار,طماطم,خس'],['شوفان بالموز واللبن','شوفان,موز,لبن'],['زبادي بالفاكهة والمكسرات','زبادي,موز,فاكهة,تفاح,مكسرات'],['بطاطس مشوية مع زبادي','بطاطس,زبادي'],['ساندوتش جبنة قريش وخيار','جبنة,خيار,خبز,طماطم'],['رز بخضار وفراخ','رز,فراخ,خضار,جزر'],['طاجن خضار بالفرن','كوسة,باذنجان,بطاطس,طماطم,فلفل'],['سمك مشوي مع رز وسلطة','سمك,رز,خيار']];
+const CH=[[/حديد|iron|فيروجلوبين|ferro/i,'الحديد: صباحًا على معدة فاضية (مع عصير برتقال/فيتامين C)، وبعيد عن الشاي والقهوة واللبن والكالسيوم بساعتين.'],[/كالسيوم|calcium/i,'الكالسيوم: مع الأكل أو مساءً، وبعيد عن الحديد والليفوثيروكسين.'],[/فيتامين د|vitamin d|d3|ديفارول/i,'فيتامين د: مع وجبة فيها دهون صحية عشان يتمتص أحسن.'],[/مغنيسيوم|magnes/i,'المغنيسيوم: مساءً قبل النوم بساعة، بيساعد على الاسترخاء.'],[/اوميجا|أوميجا|omega|زيت سمك/i,'الأوميجا 3: مع أكبر وجبة في اليوم.'],[/ستاتين|statin|atorva|اتورفا|أتورفا|rosuva|روزوفا|simva|ليبتور|كرستور/i,'الستاتين: مساءً أو قبل النوم لأن الكوليسترول بيتصنّع بالليل.'],[/amlodipine|أملوديبين|املوديبين|ضغط|losartan|لوسارتان|bisoprolol|كونكور|enalapril|atenolol/i,'أدوية الضغط: غالبًا صباحًا، وبعضها مساءً حسب توصية دكتورك. الأهم ميعاد ثابت.'],[/omeprazole|اوميبرازول|أوميبرازول|nexium|نيكسيوم|pantoprazole|بانتوبرازول|lansoprazole|controloc|كونترولوك/i,'أدوية الحموضة: قبل الفطار بـ 30–60 دقيقة على معدة فاضية.'],[/metformin|ميتفورمين|جلوكوفاج|glucophage/i,'الميتفورمين: مع الأكل أو بعده مباشرة لتقليل اضطراب المعدة.'],[/levothyroxine|ليفوثيروكسين|eltroxin|الترو|إلتروكسين|euthyrox/i,'دواء الغدة: صباحًا على معدة فاضية قبل الفطار بـ 30–60 دقيقة، وبعيد عن الحديد والكالسيوم 4 ساعات.'],[/مضاد حيوي|antibiotic|augmentin|اوجمنتين|أوجمنتين|amoxicillin|أموكسيسيلين|azithro|زيثروماكس|cipro|سيبروفلوكساسين/i,'المضاد الحيوي: مواعيد منتظمة بفاصل متساوي (كل 8 أو 12 ساعة) وكمّل المدة كلها.'],[/brufen|بروفين|ibuprofen|diclofenac|ديكلوفيناك|voltaren|فولتارين|naproxen/i,'مسكنات الالتهاب: بعد الأكل لحماية المعدة.'],[/cetirizine|سيتريزين|zyrtec|زيرتك|loratadine|لوراتادين|كلاريتين|حساسية/i,'مضاد الحساسية: غالبًا مساءً، وممكن يسبب نعاس.'],[/panadol|بنادول|paracetamol|باراسيتامول|كونجستال|برد|flu|فلو|cold/i,'أدوية البرد/الباراسيتامول: بفاصل 6–8 ساعات، ولا تجمع أكتر من دواء فيه باراسيتامول.'],[/b12|فيتامين ب|neurobion|نيوروبيون|فيتامين سي|vitamin c|مالتي|multi|زنك|zinc/i,'الفيتامينات B وC والمالتي: صباحًا مع الفطار. الزنك مع الأكل لتقليل الغثيان.']];
+const chrono=n=>{const f=CH.find(c=>c[0].test(n));return f?f[1]:'مفيش توقيت مخصوص ليه عندي؛ التزم بميعاد ثابت وبتعليمات الدكتور أو الصيدلي (قبل/بعد الأكل).'};
+let view=S.p?'today':'welcome',FB='';
+function render(){theme();const a=$('#app');if(view=='welcome'){a.innerHTML=vWelcome();return}
+const T=[['today','اليوم'],['log','يومياتي'],['meds','الأدوية'],['food','الأكل'],['learn','توعية'],['me','ملفي']];
+a.innerHTML=`<header><b>🌿 رفيقي الصحي</b><button class="s" onclick="view='welcome';render()">🏠 الرئيسية</button></header><nav>${T.map(t=>`<button class="${view==t[0]?'on':''}" onclick="go('${t[0]}')">${t[1]}</button>`).join('')}</nav><main>${({today:vToday,log:vLog,meds:vMeds,food:vFood,learn:vLearn,me:vMe})[view]()}</main><p class="ft">الموقع إرشادي ولا يغني عن استشارة الطبيب أو الصيدلي.</p>`}
+const go=v=>{view=v;FB='';render();scrollTo(0,0)};
+function vWelcome(){const p=S.p||{bar:[]};const rd=(n,v,l,c)=>`<label class="chip"><input type="radio" name="${n}" value="${v}" ${c?'checked':''}>${l}</label>`;
+return `<div class="wel"><h1>أهلاً بيك 🌿</h1><p class="sub">${S.p?'عدّل بياناتك براحتك.':'جاوب على كام سؤال عشان نظبط نظامك سوا.'}</p>
+<b>النوع</b><div>${rd('g','f','أنثى',p.g=='f')}${rd('g','m','ذكر',p.g=='m')}</div>
+<b>عندك مرض مزمن؟</b><div>${rd('ch','y','أيوه',p.chronic===true)}${rd('ch','n','لأ',p.chronic===false)}</div>
+<input id="ctxt" placeholder="لو أيوه: إيه هو؟ (سكر، ضغط، ...)" value="${esc(p.ctxt||'')}">
+<b>العمر</b><input id="age" type="number" min="1" max="120" value="${p.age||''}">
+<b>الوزن (كجم)</b><input id="w" type="number" min="10" max="300" value="${p.w||''}">
+<b>الطول (سم)</b><input id="h" type="number" min="50" max="250" value="${p.h||''}">
+<b>إيه أكتر حاجة بتصعّب عليك الالتزام؟</b><div>${[['time','ضيق الوقت'],['money','الفلوس'],['boring','الروتين ممل'],['forget','النسيان'],['mot','قلة الحماس']].map(b=>`<label class="chip"><input type="checkbox" name="bar" value="${b[0]}" ${(p.bar||[]).includes(b[0])?'checked':''}>${b[1]}</label>`).join('')}</div>
+<p><button onclick="saveP()">${S.p?'حفظ والمتابعة':'يلا نبدأ'}</button> ${S.p?'<button class="s" onclick="view=\'today\';render()">رجوع للخطة</button>':''}</p></div>`}
+function saveP(){const g=$('[name=g]:checked'),ch=$('[name=ch]:checked'),age=+$('#age').value,w=+$('#w').value,h=+$('#h').value;
+if(!g||!ch||!age||!w||!h){alert('من فضلك كمّل النوع والمرض المزمن والعمر والوزن والطول.');return}
+S.p={g:g.value,chronic:ch.value=='y',ctxt:$('#ctxt').value,age,w,h,bar:$$('[name=bar]:checked').map(x=>x.value)};save();view='today';render()}
+function vToday(){const p=S.p,d=day(),goal=Math.max(6,Math.round(p.w*33/250)),act=d.acts.reduce((s,a)=>s+a.m,0),bmi=p.w/((p.h/100)**2),hr=new Date().getHours();
+const tp=TIPS[Math.floor(Date.now()/864e5)%TIPS.length],mt=[];S.meds.forEach((m,i)=>m.t.forEach((t,j)=>mt.push([t,i,j])));mt.sort();
+const done=mt.filter(x=>d.taken[x[1]+'_'+x[2]]).length,sc=(d.water>=goal)+(act>=30)+(d.meals.length>=2)+(mt.length==0||done==mt.length);
+const adj=[];if(d.water<goal&&hr>=14)adj.push(`لسه ناقصك ${goal-d.water} كوباية مياه، وزّعها لحد آخر النهار.`);if(act<30)adj.push(`فاضل ${30-act} دقيقة حركة (مشي سريع كفاية).`);
+if(d.sleep&&d.wake&&sleepH(d)<7)adj.push('نومك امبارح كان قليل؛ خفّف مجهود النهارده وبكّر في النوم الليلة.');if(d.meals.some(m=>JUNK.test(m.t)))adj.push('أكلت أكلة مش صحية؟ عادي! كمّل باقي اليوم بأكل خفيف وخضار ومياه وماتبدأش من الصفر.');
+return `<div class="card"><h3>💡 ${tp[0]}</h3>${tp[1]}<div class="ok">⚠️ ${tp[2]}</div><small>الالتزام بنمط الحياة اليومي أهم من الكمال؛ خطوات صغيرة كل يوم بتبني صحة طويلة المدى.</small></div>
+<div class="card"><h3>خطة ${today()}</h3><small>مؤشر كتلة جسمك ${bmi.toFixed(1)} (${bmi<18.5?'أقل من الطبيعي':bmi<25?'طبيعي':bmi<30?'زيادة وزن':'سمنة'})</small>
+<p>💧 المياه: ${d.water}/${goal} كوباية (250 مل)</p><div class="bar"><i style="width:${Math.min(100,d.water/goal*100)}%"></i></div>
+<p><button onclick="W(1)">+ كوباية</button> <button class="s" onclick="W(-1)">−</button></p>
+${p.chronic?'<small>لو عندك مشاكل في الكلى أو القلب اسأل دكتورك عن كمية المياه.</small>':''}
+<p>🚶 الحركة: ${act}/30 دقيقة (سجّلها في «يومياتي»)</p><div class="bar"><i style="width:${Math.min(100,act/30*100)}%"></i></div>
+<p>🍽️ وجبات مسجلة: ${d.meals.length}</p>${p.chronic?`<div class="ok">عندك ${esc(p.ctxt||'مرض مزمن')}: التزم بخطة دكتورك وماتغيّرش الأدوية من نفسك، وابدأ التمارين تدريجيًا.</div>`:''}</div>
+${mt.length?`<div class="card"><h3>💊 أدوية النهارده</h3>${mt.map(x=>`<label class="r"><input type="checkbox" ${d.taken[x[1]+'_'+x[2]]?'checked':''} onchange="tk('${x[1]}_${x[2]}',this.checked)"> ${x[0]} — ${esc(S.meds[x[1]].n)}</label>`).join('')}</div>`:''}
+<div class="ok"><b>${['خطوة صغيرة النهارده أحسن من مفيش!','شغل حلو، كمّل!','قربت جدًا!','ممتاز، يوم ناجح!','أنت بطل! 🎉'][sc]}</b> (${sc}/4 أهداف)</div>
+${adj.length?`<div class="card"><h3>🔧 تعديلات اليوم</h3>${adj.map(a=>'• '+a).join('<br>')}</div>`:''}
+${p.bar.length?`<div class="card"><h3>🧩 تخطي العوائق</h3>${p.bar.map(b=>'• '+BAR[b]).join('<br>')}</div>`:''}
+`}
+const SV=b=>`<svg viewBox="0 0 120 120" width="110" height="110" style="flex:none" fill="none" stroke="#33303a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${b}</svg>`,FL='<path d="M8 108H112" stroke-width="2"/>';
+const IM={
+good:SV(FL+'<path d="M36 40V78H64M50 78V108M44 74H70V104H80M46 34L44 74M46 44L64 56H78M74 58H116M112 58V108M100 40V58"/><circle cx="46" cy="26" r="8" fill="var(--c1)"/><rect x="92" y="18" width="16" height="22" fill="var(--c3)"/>'),
+bad:SV(FL+'<path d="M36 40V78H64M50 78V108M44 74H70V104H80M52 44Q38 58 44 74M52 46L64 58H78M74 58H116M112 58V108M100 54V58"/><circle cx="62" cy="34" r="8" fill="var(--c1)"/><rect x="92" y="36" width="16" height="18" fill="var(--c3)"/>'),
+neck:SV(FL+'<circle cx="66" cy="28" r="9" fill="var(--c1)"/><path d="M60 40V80L50 108M60 80L70 108M44 46H76M76 46L72 24"/>'),
+shoulder:SV(FL+'<circle cx="60" cy="26" r="9" fill="var(--c1)"/><path d="M60 38V80L50 108M60 80L70 108M44 46H76"/><circle cx="42" cy="46" r="9" stroke-dasharray="4 4"/><circle cx="78" cy="46" r="9" stroke-dasharray="4 4"/>'),
+stretch:SV(FL+'<circle cx="60" cy="30" r="9" fill="var(--c1)"/><path d="M60 40V80L50 108M60 80L70 108M60 46L40 12M60 46L80 12"/>'),
+squat:SV(FL+'<circle cx="50" cy="34" r="9" fill="var(--c1)"/><path d="M52 44L62 70L84 76V104H94M56 50L88 50M92 80H114M104 80V108"/>'),
+walk:SV(FL+'<circle cx="60" cy="22" r="9" fill="var(--c1)"/><path d="M60 32L58 70L44 106M58 70L74 104M60 42L44 60M60 42L76 56"/>'),
+eye:SV('<path d="M12 60Q60 20 108 60Q60 100 12 60Z" fill="var(--c3)"/><circle cx="60" cy="60" r="14" fill="var(--c1)"/><circle cx="60" cy="60" r="5" fill="#33303a"/>'),
+glass:SV('<path d="M38 24H82L76 104H44Z" fill="var(--c3)"/><path d="M41 54H79L76 104H44Z" fill="var(--c1)"/>'),
+moon:SV('<path d="M78 20A40 40 0 1 0 100 80 32 32 0 0 1 78 20Z" fill="var(--c1)"/>'),
+sun:SV('<circle cx="60" cy="60" r="16" fill="var(--c1)"/><path d="M60 14V28M60 92V106M14 60H28M92 60H106M28 28L38 38M82 82L92 92M92 28L82 38M28 92L38 82"/>')};
+function vLearn(){const C=(i,t,x)=>`<div class="card r" style="flex-wrap:nowrap">${i}<div><h3>${t}</h3>${x}</div></div>`;
+return `<div class="card"><h3>🪑 القعدة الصح والغلط</h3><div class="r" style="justify-content:space-around"><div style="text-align:center">${IM.good}<br>✅ صح</div><div style="text-align:center">${IM.bad}<br>❌ غلط</div></div>ضهرك مسنود، ركبتاك بزاوية 90°، قدماك على الأرض، والشاشة في مستوى عينيك.</div>
+<h3>🤸 تمارين بسيطة</h3>${C(IM.neck,'تمدد الرقبة','مِيّل راسك ناحية الكتف 15 ثانية لكل جهة، 3 مرات.')}${C(IM.shoulder,'لفّ الكتفين','10 لفّات للخلف و10 للأمام، بتخفف شد الكتف والرقبة.')}${C(IM.stretch,'تمدد الجسم','ارفع إيديك لفوق وشد جسمك 20 ثانية، كل ساعة قعاد.')}${C(IM.squat,'قعدة وقومة','اقعد على الكرسي وقوم 10 مرات ببطء، بتقوّي الرجلين.')}${C(IM.walk,'المشي','10 دقايق مشي سريع 3 مرات في اليوم تكفي كبداية.')}
+<h3>💡 توعية</h3>${C(IM.eye,'قاعدة 20-20-20','كل 20 دقيقة بص على حاجة بعيدة 20 ثانية. وافتكر تغمّض عينك كتير.')}${C(IM.glass,'المياه','وزّع المياه على اليوم. لون بول فاتح علامة كويسة.')}${C(IM.moon,'النوم','7–9 ساعات، وسيب الموبايل قبل النوم بنص ساعة.')}${C(IM.sun,'الشمس','10–15 دقيقة صباحًا بتحسّن المزاج والنوم.')}
+<h3>⚠️ الخطورة</h3>${C(SV('<path d="M60 16L108 98H12Z" fill="var(--c3)"/><path d="M60 46V70M60 84V86"/>'),'خطورة العادات السيئة','• الجلوس الطويل: ضعف الدورة الدموية وآلام الظهر وزيادة خطر السكر والقلب.<br>• السهر وقلة النوم: ضعف المناعة وزيادة الوزن والتوتر.<br>• السكريات والمقليات: السمنة وارتفاع السكر والكوليسترول.<br>• قلة المياه: صداع وإرهاق وحصوات.<br>• الشاشات بدون راحة: إجهاد وجفاف العين.<br>• إيقاف الدواء أو تغيير جرعته من نفسك: ممكن يضر جدًا.')}${C(SV('<circle cx="60" cy="60" r="44" fill="var(--c3)"/><path d="M60 34V66M60 80V82"/>'),'🚨 علامات خطر: اطلب الطوارئ فورًا','• ألم أو ضغط في الصدر • ضيق نفس شديد<br>• إغماء أو دوخة شديدة • ضعف مفاجئ في جهة من الجسم أو صعوبة في الكلام<br>• صداع مفاجئ وشديد • ألم بطن أو قيء شديد<br>• هبوط السكر: رعشة وعرق وتشوش (للي بياخد أدوية سكر)')}
+<div class="ok">لو حسيت بألم حاد أو دوخة وقّف التمرين واستشر دكتورك، خصوصًا مع الأمراض المزمنة.</div>`}
+const W=n=>{const d=day();d.water=Math.max(0,d.water+n);save();render()};
+const tk=(k,v)=>{day().taken[k]=v;save();render()};
+function sleepH(d){const [a,b]=d.sleep.split(':').map(Number),[c,e]=d.wake.split(':').map(Number);return(((c*60+e)-(a*60+b)+1440)%1440)/60}
+function vLog(){const d=day();return `${FB?`<div class="ok">${FB}</div>`:''}
+<div class="card"><h3>🚶 عملت إيه من حركة؟</h3><select id="ak">${SP.map(s=>`<option>${s}</option>`).join('')}</select><input id="an" placeholder="ملاحظة (اختياري) مثلاً: مشيت للجامعة"><input id="am" type="number" placeholder="كام دقيقة؟"><button onclick="addAct()">سجّل</button>
+${d.acts.map(a=>`<div>• ${esc(a.t)} — ${a.m} د</div>`).join('')}</div>
+<div class="card"><h3>🍽️ أكلت إيه؟</h3><select id="mk"><option value="b">🌅 فطار</option><option value="l">☀️ غداء</option><option value="d">🌙 عشاء</option><option value="s">🍎 وجبة خفيفة</option></select><input id="mt" placeholder="مثلاً: فول وبيضة وخبز"><button onclick="addMeal()">سجّل</button>${d.meals.map(a=>`<div>${MK[a.k]||'🍽️'}: ${esc(a.t)}</div>`).join('')}</div>
+<div class="card"><h3>😴 النوم</h3>نمت الساعة<input id="sl" type="time" value="${d.sleep}">صحيت الساعة<input id="wk" type="time" value="${d.wake}"><button onclick="saveSl()">احفظ</button></div>
+<div class="card"><h3>📝 احكي يومك</h3><textarea id="nt" rows="3" placeholder="قعدت قدام اللابتوب كتير...">${esc(d.notes)}</textarea><button onclick="saveNt()">حلّل يومي</button></div>`}
+function addAct(){const n=$('#an').value.trim(),t=$('#ak').value+(n?' — '+n:''),m=+$('#am').value;if(!m)return;const d=day();d.acts.push({t,m});save();const tot=d.acts.reduce((s,a)=>s+a.m,0);
+FB=tot>=30?`${y('برافو عليكي','برافو عليك')}! وصلت ${tot} دقيقة؛ ده كافي لليوم. حافظ على الاستمرارية 💪`:`${m} دقيقة بداية حلوة. الهدف 30 دقيقة، فضّل ${30-tot} دقيقة (مشي سريع أو سلم بدل الأسانسير).`;view='log';render()}
+function addMeal(){const t=$('#mt').value.trim(),k=$('#mk').value;if(!t)return;const d=day();d.meals.push({t,k});save();
+FB=JUNK.test(t)?`ولا يهمك، وجبة واحدة مش بتبوّظ يومك! ${y('كمّلي','كمّل')} باقي اليوم صح: مياه كفاية، ومشي 15 دقيقة بعد الأكل، وماتعوّضش بالجوع.<br><b>اقتراح لباقي اليوم:</b> ${nxt(k)}<br>${p_ch()}أنت مش بتبدأ من الصفر 🌱`:'اختيار ممتاز! كمّل على نفس النهج 👏';view='log';render()}
+const MK={b:'🌅 فطار',l:'☀️ غداء',d:'🌙 عشاء',s:'🍎 وجبة خفيفة'},SP=['مشي','جري خفيف','عجلة','سباحة','تمارين وزن الجسم (ضغط/بلانك/سكوات)','تمارين مقاومة بأوزان','يوجا أو تمدد','رقص أو زومبا','سلالم','رياضة جماعية (كورة...)'];
+const NX={b:'الغداء: فراخ أو سمك مشوي مع خضار وسلطة وكمية رز/خبز صغيرة. العشاء: زبادي أو عجة بيض بخضار. وسناك: فاكهة أو حفنة مكسرات.',l:'سناك: فاكهة أو زبادي. العشاء: شوربة عدس أو سلطة تونة أو عجة بيض بخضار بدون نشويات كتير.',d:'قبل النوم كوباية مياه أو أعشاب دافئة بدون سكر، وبكرة ابدأ بفطار فيه بروتين (بيض أو فول أو زبادي) وماتفوتوش.',s:'الوجبة الجاية: بروتين مشوي وخضار كتير، ومياه بدل المشروبات المحلاة.'};
+const nxt=k=>NX[k]||NX.s;
+const p_ch=()=>S.p.chronic?'راقب قياساتك (سكر/ضغط) النهارده. ':'';
+function saveSl(){const d=day();d.sleep=$('#sl').value;d.wake=$('#wk').value;save();if(d.sleep&&d.wake){const h=sleepH(d);FB=h>=7&&h<=9?`نمت ${h.toFixed(1)} ساعة، ممتاز!`:h<7?`نمت ${h.toFixed(1)} ساعة بس؛ حاول توصل 7–9 ساعات وثبّت ميعاد النوم.`:`نمت ${h.toFixed(1)} ساعة، زيادة النوم بتسبب خمول أحيانًا.`}view='log';render()}
+function saveNt(){const t=$('#nt').value,d=day();d.notes=t;save();const f=[];
+if(/سهر/.test(t))f.push('السهر بيأثر على الشهية والتركيز؛ حاول تنام بدري الليلة.');if(/شاشة|موبايل|لابتوب|كمبيوتر/.test(t))f.push('طبّق 20-20-20 وقوم تمشي كل 45 دقيقة.');if(/توتر|متوتر|ضغط|زهقان|زعلان/.test(t))f.push('جرّب تنفس عميق 4-6 دقايق (شهيق 4 ثواني وزفير 6) ومشي خفيف.');if(/نسيت/.test(t))f.push('اربط العادة بحاجة ثابتة وفعّل تنبيهات الأدوية.');if(/قعدت|قاعد/.test(t))f.push('حاول تقطع القعدة الطويلة بحركة كل ساعة.');
+FB=f.length?f.join('<br>'):'شكرًا إنك حكيت! كمّل تسجيل يومك وأنا هعدّل الخطة معاك.';view='log';render()}
+function vMeds(){const nm=typeof Notification!='undefined'&&Notification.permission!='granted';return `<div class="card"><h3>إضافة دواء</h3><input id="mn" placeholder="اسم الدواء/المكمل"><input id="mc" placeholder="التركيز (مثلاً 500 مجم)"><input id="md" placeholder="الجرعة (مثلاً حباية واحدة)">
+<select id="mf"><option>1</option><option>2</option><option>3</option><option>4</option></select><small>عدد المرات يوميًا</small>أول جرعة الساعة<input id="mi" type="time" value="08:00"><button onclick="addMed()">أضف</button></div>
+${nm?'<p><button class="s" onclick="Notification.requestPermission().then(render)">🔔 فعّل التنبيهات</button></p>':''}
+${S.meds.map((m,i)=>`<div class="card"><h3>${esc(m.n)} <small>${esc(m.c)} • ${esc(m.d)}</small></h3>${m.t.map((t,j)=>`<input type="time" value="${t}" onchange="S.meds[${i}].t[${j}]=this.value;save()" style="width:auto">`).join(' ')}
+<div class="ok">⏰ ${chrono(m.n)}</div><button class="s" onclick="S.meds.splice(${i},1);save();render()">حذف</button></div>`).join('')||'<p class="sub">لسه مفيش أدوية مضافة.</p>'}<small>التنبيهات بتشتغل والصفحة مفتوحة.</small>`}
+function addMed(){const n=$('#mn').value.trim();if(!n)return;const f=+$('#mf').value,[h,mi]=$('#mi').value.split(':').map(Number),t=[];
+for(let i=0;i<f;i++){const x=(h*60+mi+Math.round(i*1440/f))%1440;t.push(String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0'))}
+S.meds.push({n,c:$('#mc').value,d:$('#md').value,f,t});save();render()}
+function vFood(){return `<div class="card"><h3>🥗 المتوفر عندك؟</h3><input id="ing" placeholder="بيض، طماطم، رز، فراخ..."><button onclick="sug()">اقترح</button><div id="sg"></div></div><div class="ok">${S.p.chronic?`مع ${esc(S.p.ctxt||'المرض المزمن')}: قلّل الملح والسكر والنشويات الكتير، واسأل أخصائي تغذية.`:'نصف الطبق خضار وربع بروتين وربع نشويات.'}</div>`}
+function sug(){const t=$('#ing').value,r=R.map(x=>[x,x[1].split(',').filter(k=>t.includes(k)).length]).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]).slice(0,3);
+$('#sg').innerHTML=r.length?r.map(x=>`<div class="ok">• ${x[0][0]}</div>`).join(''):'<div class="ok">اكتب مكونات أكتر (بيض، فول، عدس، فراخ...) وهقترح عليك.</div>'}
+function vMe(){const c=S.th||(S.p.chronic?PAL.c:S.p.g=='f'?PAL.f:PAL.m);return `<div class="card"><h3>🎨 ألوان الموقع</h3><div class="r">${c.map((x,i)=>`<input type="color" value="${x}" onchange="setC(${i},this.value)">`).join('')}</div>
+<p><button class="s" onclick="S.th=null;save();render()">الألوان الافتراضية</button></p></div>
+<div class="card"><h3>بياناتي</h3>${S.p.g=='f'?'أنثى':'ذكر'} • ${S.p.age} سنة • ${S.p.w} كجم • ${S.p.h} سم${S.p.chronic?'<br>مرض مزمن: '+esc(S.p.ctxt):''}<p><button onclick="view='welcome';render()">تعديل بياناتي</button></p></div>
+<button class="s" onclick="if(confirm('مسح كل البيانات؟')){S={p:null,meds:[],th:null,days:{}};save();view='welcome';render()}">مسح كل البيانات</button>`}
+function setC(i,v){const c=(S.th||(S.p.chronic?PAL.c:S.p.g=='f'?PAL.f:PAL.m)).slice();c[i]=v;S.th=c;save();theme()}
+const al=new Set();
+setInterval(()=>{const n=new Date(),k=String(n.getHours()).padStart(2,'0')+':'+String(n.getMinutes()).padStart(2,'0');
+S.meds.forEach((m,i)=>m.t.forEach((t,j)=>{const id=today()+i+j+t;if(t==k&&!al.has(id)&&!day().taken[i+'_'+j]){al.add(id);const x=$('#toast');x.textContent='💊 ميعاد '+m.n+(m.d?' — '+m.d:'');x.style.display='block';setTimeout(()=>x.style.display='none',15000);try{if(Notification.permission=='granted')new Notification('ميعاد الدواء',{body:m.n})}catch(e){}}}))},20000);
+render();
+</script></body></html>
